@@ -57,7 +57,9 @@ public:
     }
 
 
-    Range obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs) override;
+    void obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs,
+              Range& _range, bool _append) override;
+
 
 protected:
 

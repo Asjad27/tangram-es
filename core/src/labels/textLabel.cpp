@@ -150,9 +150,15 @@ bool TextLabel::updateScreenTransform(const glm::mat4& _mvp, const glm::vec2& _s
     return true;
 }
 
-Range TextLabel::obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs) {
+void TextLabel::obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs,
+                     Range& _range, bool _append) {
 
-    auto first = int(_obbs.size());
+    if (m_type == Label::Type::curved) {
+        // Dont update curved label ranges for now (This isn't used anyway)
+        _append = true;
+    }
+
+    if (_append) { _range.start = int(_obbs.size()); }
 
     glm::vec2 dim = m_dim - m_options.buffer;
 
@@ -173,22 +179,21 @@ Range TextLabel::obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs
 
         float prevLength = start;
 
-        int cnt = 0;
+        int count = 0;
         for (size_t i = m_sampler.curSegment()+1; i < m_sampler.m_points.size(); i++) {
 
             float currLength = m_sampler.point(i).length;
             float segmentLength = currLength - prevLength;
-
-            cnt++;
+            count++;
 
             if (start + width > currLength) {
                 p2 = m_sampler.point(i).coord;
 
                 rotation = m_sampler.segmentDirection(i-1);
                 _obbs.push_back({(p1 + p2) * 0.5f, rotation, segmentLength, dim.y});
-
                 prevLength = currLength;
                 p1 = p2;
+
             } else {
 
                 segmentLength = (start + width) - prevLength;
@@ -197,18 +202,19 @@ Range TextLabel::obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs
                 break;
             }
         }
-
-        return { first, cnt };
-
+        _range.length = count;
     } else {
 
         auto obb = OBB(m_transform.state.screenPos + m_anchor,
                        glm::vec2{m_transform.state.rotation.x, -m_transform.state.rotation.y},
                        dim.x, dim.y);
 
-        _obbs.push_back(obb);
-
-        return { first, 1 };
+        if (_append) {
+            _obbs.push_back(obb);
+        } else {
+            _obbs[_range.start] = obb;
+        }
+        _range.length = 1;
     }
 }
 

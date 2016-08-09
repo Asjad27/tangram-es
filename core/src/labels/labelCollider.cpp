@@ -98,7 +98,7 @@ void LabelCollider::process() {
         auto* label = entry.label;
         label->updateScreenTransform(mvp, m_screenSize, false, m_screenTransform);
 
-        entry.obbs = label->obbs(m_screenTransform, m_obbs);
+        label->obbs(m_screenTransform, m_obbs, entry.obbs);
 
         auto aabb = m_obbs[entry.obbs.start].getExtent();
         for (int i = entry.obbs.start+1; i < entry.obbs.end(); i++) {

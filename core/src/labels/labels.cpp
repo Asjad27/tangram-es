@@ -247,7 +247,7 @@ void Labels::handleOcclusions(const View& _view, float _dt) {
                 continue;
             }
         }
-        entry.obbs = l->obbs(m_screenTransform, m_obbs);
+        l->obbs(m_screenTransform, m_obbs, entry.obbs);
 
         // Skip label if another label of this repeatGroup is
         // within repeatDistance.
@@ -261,8 +261,7 @@ void Labels::handleOcclusions(const View& _view, float _dt) {
         do {
             if (l->isOccluded()) {
                 // Update BBox for anchor fallback
-                //l->updateBBoxes(dz);
-                entry.obbs = l->obbs(m_screenTransform, m_obbs);
+                l->obbs(m_screenTransform, m_obbs, entry.obbs, false);
                 if (anchorIndex == l->anchorIndex()) {
                     // Reached first anchor again
                     break;

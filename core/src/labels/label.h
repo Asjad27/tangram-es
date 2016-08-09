@@ -126,8 +126,9 @@ public:
     /* Gets for label options: color and offset */
     const Options& options() const { return m_options; }
 
-    /* Adds the oriented bounding boxes of the label to _obbs */
-    virtual Range obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs) = 0;
+    /* Adds the oriented bounding boxes of the label to _obbs, updates Range */
+    virtual void obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs,
+                      Range& _range, bool _append = true) = 0;
 
     const Transform& transform() const { return m_transform; }
     State state() const { return m_state; }

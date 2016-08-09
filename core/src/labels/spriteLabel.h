@@ -31,9 +31,10 @@ public:
     void pushTransform(ScreenTransform& _transform) override;
 
     bool updateScreenTransform(const glm::mat4& _mvp, const glm::vec2& _screenSize,
-                               bool _testVisibility, ScreenTransform& _transform);
+                               bool _testVisibility, ScreenTransform& _transform) override;
 
-    Range obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs) override;
+    void obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs,
+              Range& _range, bool _append) override;
 
 private:
 

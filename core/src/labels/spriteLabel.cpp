@@ -48,8 +48,11 @@ bool SpriteLabel::updateScreenTransform(const glm::mat4& _mvp, const glm::vec2& 
     return true;
 }
 
-Range SpriteLabel::obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs) {
-    Range range {int(_obbs.size()), 1};
+void SpriteLabel::obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs,
+                       Range& _range, bool _append) {
+
+    if (_append) { _range.start = int(_obbs.size()); }
+    _range.length = 1;
 
     glm::vec2 sp = m_transform.state.screenPos;
     glm::vec2 dim = m_dim + glm::vec2(m_extrudeScale * 2.f); // * _zoomFract);
@@ -58,9 +61,11 @@ Range SpriteLabel::obbs(const ScreenTransform& _transform, std::vector<OBB>& _ob
 
     auto obb = OBB(sp, m_transform.state.rotation, dim.x, dim.y);
 
-    _obbs.push_back(obb);
-
-    return range;
+    if (_append) {
+        _obbs.push_back(obb);
+    } else {
+        _obbs[_range.start] = obb;
+    }
 }
 
 void SpriteLabel::pushTransform(ScreenTransform& _transform) {
