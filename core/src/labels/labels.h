@@ -62,7 +62,7 @@ protected:
 
     PERF_TRACE void sortLabels();
 
-    PERF_TRACE void handleOcclusions(const View& _view);
+    PERF_TRACE void handleOcclusions(const View& _view, float _dt);
 
     PERF_TRACE bool withinRepeatDistance(Label *_label);
 
@@ -84,9 +84,14 @@ protected:
         Tile* tile;
         float priority;
         bool proxy;
+
+        Range obbs;
     };
 
     static bool labelComparator(const LabelEntry& _a, const LabelEntry& _b);
+
+    Label::ScreenTransform m_screenTransform;
+    std::vector<OBB> m_obbs;
 
     std::vector<LabelEntry> m_labels;
 

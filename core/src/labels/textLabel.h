@@ -46,17 +46,22 @@ public:
     TextLabel(Label::Transform _transform, Type _type, Label::Options _options,
               TextLabel::FontVertexAttributes _attrib,
               glm::vec2 _dim, TextLabels& _labels, TextRange _textRanges,
-              TextLabelProperty::Align _preferedAlignment);
+              TextLabelProperty::Align _preferedAlignment,
+              size_t _anchorPoint = 0, const std::vector<glm::vec2>& _line = {});
 
-    void updateBBoxes(float _zoomFract) override;
+    bool updateScreenTransform(const glm::mat4& _mvp, const glm::vec2& _screenSize,
+                               bool _drawAllLabels, ScreenTransform& _transform) override;
 
     TextRange& textRanges() {
         return m_textRanges;
     }
 
+
+    Range obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs) override;
+
 protected:
 
-    void pushTransform() override;
+    void pushTransform(ScreenTransform& _transform) override;
 
 private:
 
@@ -76,6 +81,10 @@ private:
     // The text LAbel prefered alignment
     TextLabelProperty::Align m_preferedAlignment;
 
+    size_t m_anchorPoint;
+    std::vector<glm::vec2> m_line;
+
+    LineSampler m_sampler;
 };
 
 }

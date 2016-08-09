@@ -33,24 +33,7 @@ std::unique_ptr<TextLabel> makeLabel(Label::Transform _transform, Label::Type _t
                                                     TextLabelProperty::Align::none));
 }
 
-TextLabel makeLabelWithAnchorFallbacks(Label::Transform _transform, glm::vec2 _offset = {0, 0}) {
-    Label::Options options;
-
-    // options.anchors.anchor[0] = LabelProperty::Anchor::center;
-    options.anchors.anchor[0] = LabelProperty::Anchor::right;
-    options.anchors.anchor[1] = LabelProperty::Anchor::bottom;
-    options.anchors.anchor[2] = LabelProperty::Anchor::left;
-    options.anchors.anchor[3] = LabelProperty::Anchor::top;
-    options.anchors.count = 4;
-
-    options.offset = _offset;
-
-    TextRange textRanges;
-
-    return TextLabel(_transform, Label::Type::point, options,
-            {}, {10, 10}, dummy, textRanges, TextLabelProperty::Align::none);
-}
-
+#if 0
 TEST_CASE("Test getFeaturesAtPoint", "[Labels][FeaturePicking]") {
     std::unique_ptr<Labels> labels(new Labels());
 
@@ -204,5 +187,6 @@ TEST_CASE( "Test anchor fallback behavior", "[Labels][AnchorFallback]" ) {
     }
 
 }
+#endif
 
 }

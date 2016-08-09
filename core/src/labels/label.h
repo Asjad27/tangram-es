@@ -10,6 +10,7 @@
 #include "util/hash.h"
 #include "data/properties.h"
 #include "labels/labelProperty.h"
+#include "util/lineSampler.h"
 
 #include <string>
 #include <limits>
@@ -27,7 +28,8 @@ public:
     enum class Type {
         point,
         line,
-        debug,
+        curved,
+        debug
     };
 
     enum State {
@@ -53,6 +55,10 @@ public:
             glm::vec2 rotation = {1.f,0.f};
             float alpha = 0.f;
         } state;
+    };
+
+    struct ScreenTransform {
+        LineSampler sampler;
     };
 
     struct Transition {
@@ -86,21 +92,21 @@ public:
 
     virtual ~Label();
 
-    bool update(const glm::mat4& _mvp, const glm::vec2& _screenSize, float _zoomFract, bool _drawAllLabels = false);
+    bool update(const glm::mat4& _mvp, const glm::vec2& _screenSize, float _zoomFract,
+                bool _drawAllLabels, ScreenTransform& _transform);
 
     bool nextAnchor();
     bool setAnchorIndex(int _index);
     int anchorIndex() { return m_anchorIndex; }
 
     /* Push the pending transforms to the vbo by updating the vertices */
-    virtual void pushTransform() = 0;
+    virtual void pushTransform(ScreenTransform& _transform) = 0;
 
     bool evalState(float _dt);
 
     /* Update the screen position of the label */
-    bool updateScreenTransform(const glm::mat4& _mvp, const glm::vec2& _screenSize, bool _drawAllLabels);
-
-    virtual void updateBBoxes(float _zoomFract) = 0;
+    virtual bool updateScreenTransform(const glm::mat4& _mvp, const glm::vec2& _screenSize,
+                                       bool _drawAllLabels, ScreenTransform& _transform) = 0;
 
     /* Occlude the label */
     void occlude(bool _occlusion = true) { m_occluded = _occlusion; }
@@ -119,10 +125,10 @@ public:
     const glm::vec2& dimension() const { return m_dim; }
     /* Gets for label options: color and offset */
     const Options& options() const { return m_options; }
-    /* Gets the extent of the oriented bounding box of the label */
-    AABB aabb() const { return m_obb.getExtent(); }
-    /* Gets the oriented bounding box of the label */
-    const OBB& obb() const { return m_obb; }
+
+    /* Adds the oriented bounding boxes of the label to _obbs */
+    virtual Range obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs) = 0;
+
     const Transform& transform() const { return m_transform; }
     State state() const { return m_state; }
     bool isOccluded() const { return m_occluded; }
@@ -164,8 +170,6 @@ protected:
 
     // the label type (point/line)
     Type m_type;
-    // the label oriented bounding box
-    OBB m_obb;
     // the label transforms
     Transform m_transform;
     // the dimension of the label

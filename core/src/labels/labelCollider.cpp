@@ -27,25 +27,25 @@ void LabelCollider::addLabels(std::vector<std::unique_ptr<Label>>& _labels) {
 
 void LabelCollider::handleRepeatGroup(size_t startPos) {
 
-    float threshold2 = pow(m_labels[startPos]->options().repeatDistance, 2);
-    size_t repeatGroup = m_labels[startPos]->options().repeatGroup;
+    float threshold2 = pow(m_labels[startPos].label->options().repeatDistance, 2);
+    size_t repeatGroup = m_labels[startPos].label->options().repeatGroup;
 
     // Get the range
     size_t endPos = startPos;
     for (;startPos > 0; startPos--) {
-        if (m_labels[startPos-1]->options().repeatGroup != repeatGroup) { break; }
+        if (m_labels[startPos-1].label->options().repeatGroup != repeatGroup) { break; }
     }
     for (;endPos < m_labels.size()-1; endPos++) {
-        if (m_labels[endPos+1]->options().repeatGroup != repeatGroup) { break; }
+        if (m_labels[endPos+1].label->options().repeatGroup != repeatGroup) { break; }
     }
 
 
     for (size_t i = startPos; i < endPos; i++) {
-        Label* l1 = m_labels[i];
+        Label* l1 = m_labels[i].label;
         if (l1->isOccluded()) { continue; }
 
         for (size_t j = i+1; j <= endPos; j++) {
-            Label* l2 = m_labels[j];
+            Label* l2 = m_labels[j].label;
             if (l2->isOccluded()) { continue; }
 
             float d2 = distance2(l1->center(), l2->center());
@@ -60,7 +60,10 @@ void LabelCollider::process() {
 
     // Sort labels so that all labels of one repeat group are next to each other
     std::sort(m_labels.begin(), m_labels.end(),
-              [](auto* l1, auto* l2) {
+              [](auto& e1, auto& e2) {
+                  auto* l1 = e1.label;
+                  auto* l2 = e2.label;
+
                   if (l1->options().priority != l2->options().priority) {
                       // lower numeric priority means higher priority
                       return l1->options().priority < l2->options().priority;
@@ -89,10 +92,20 @@ void LabelCollider::process() {
     mvp[3][0] = -1;
     mvp[3][1] = 1;
 
-    for (auto* label : m_labels) {
-        label->update(mvp, m_screenSize, 1, true);
+    m_obbs.clear();
 
-         m_aabbs.push_back(label->aabb());
+    for (auto& entry : m_labels) {
+        auto* label = entry.label;
+        label->updateScreenTransform(mvp, m_screenSize, false, m_screenTransform);
+
+        entry.obbs = label->obbs(m_screenTransform, m_obbs);
+
+        auto aabb = m_obbs[entry.obbs.start].getExtent();
+        for (int i = entry.obbs.start+1; i < entry.obbs.end(); i++) {
+            aabb = unionAABB(aabb, m_obbs[i].getExtent());
+        }
+
+        m_aabbs.push_back(aabb);
     }
 
     m_isect2d.resize({m_screenSize.x / 128, m_screenSize.y / 128}, m_screenSize);
@@ -102,8 +115,10 @@ void LabelCollider::process() {
     // Set the first item to be the one with higher priority
     for (auto& pair : m_isect2d.pairs) {
 
-        auto* l1 = m_labels[pair.first];
-        auto* l2 = m_labels[pair.second];
+        auto& e1 = m_labels[pair.first];
+        auto& e2 = m_labels[pair.second];
+        auto* l1 = e1.label;
+        auto* l2 = e2.label;
 
         if (l1->options().priority > l2->options().priority) {
             std::swap(pair.first, pair.second);
@@ -118,8 +133,9 @@ void LabelCollider::process() {
     // Sort by priority on the first item
     std::sort(m_isect2d.pairs.begin(), m_isect2d.pairs.end(),
               [&](auto& a, auto& b) {
-                  auto* l1 = m_labels[a.first];
-                  auto* l2 = m_labels[b.first];
+
+                  auto* l1 = m_labels[a.first].label;
+                  auto* l2 = m_labels[b.first].label;
 
                   if (l1->options().priority != l2->options().priority) {
                       // lower numeric priority means higher priority
@@ -154,8 +170,10 @@ void LabelCollider::process() {
     // Narrow Phase, resolve conflicts
     for (auto& pair : m_isect2d.pairs) {
 
-        auto* l1 = m_labels[pair.first];
-        auto* l2 = m_labels[pair.second];
+        auto& e1 = m_labels[pair.first];
+        auto& e2 = m_labels[pair.second];
+        auto* l1 = e1.label;
+        auto* l2 = e2.label;
 
         // Occlude labels within repeat group so that they don't occlude other labels
         if (repeatGroup != l1->options().repeatGroup) {
@@ -183,9 +201,20 @@ void LabelCollider::process() {
             continue;
         }
 
-        if (!intersect(l1->obb(), l2->obb())) {
-            continue;
+        bool intersection = false;
+        for (int i = e1.obbs.start; i < e1.obbs.end(); i++) {
+            for (int j = e2.obbs.start; j < e2.obbs.end(); j++) {
+
+                if (intersect(m_obbs[i], m_obbs[j])) {
+                    intersection = true;
+
+                    // break out of outer loop
+                    i = e1.obbs.end();
+                    break;
+                }
+            }
         }
+        if (!intersection) { continue; }
 
         if (l1->options().priority != l2->options().priority) {
             // lower numeric priority means higher priority
@@ -204,7 +233,8 @@ void LabelCollider::process() {
         }
     }
 
-    for (auto* label : m_labels) {
+    for (auto& entry : m_labels) {
+        auto* label = entry.label;
 
         // Manage link occlusion (unified icon labels)
         if (label->parent()) {

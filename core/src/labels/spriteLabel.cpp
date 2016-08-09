@@ -1,6 +1,8 @@
 #include "labels/spriteLabel.h"
+
 #include "gl/dynamicQuadMesh.h"
 #include "style/pointStyle.h"
+#include "util/geom.h"
 #include "platform.h"
 
 namespace Tangram {
@@ -26,16 +28,42 @@ void SpriteLabel::applyAnchor(LabelProperty::Anchor _anchor) {
     m_anchor = LabelProperty::anchorDirection(_anchor) * m_dim * 0.5f;
 }
 
-void SpriteLabel::updateBBoxes(float _zoomFract) {
+bool SpriteLabel::updateScreenTransform(const glm::mat4& _mvp, const glm::vec2& _screenSize,
+                                        bool _testVisibility, ScreenTransform& _transform) {
+
+    bool clipped = false;
+    glm::vec2 p0 = m_transform.modelPosition1;
+
+    glm::vec2 screenPosition = worldToScreenSpace(_mvp, glm::vec4(p0, 0.0, 1.0),
+                                                  _screenSize, clipped);
+
+    if (_testVisibility && clipped) { return false; }
+
+    screenPosition += m_anchor;
+    screenPosition.x += m_options.offset.x;
+    screenPosition.y -= m_options.offset.y;
+
+    m_transform.state.screenPos = screenPosition;
+
+    return true;
+}
+
+Range SpriteLabel::obbs(const ScreenTransform& _transform, std::vector<OBB>& _obbs) {
+    Range range {int(_obbs.size()), 1};
+
     glm::vec2 sp = m_transform.state.screenPos;
-    glm::vec2 dim = m_dim + glm::vec2(m_extrudeScale * 2.f * _zoomFract);
+    glm::vec2 dim = m_dim + glm::vec2(m_extrudeScale * 2.f); // * _zoomFract);
 
     if (m_occludedLastFrame) { dim += Label::activation_distance_threshold; }
 
-    m_obb = OBB(sp, m_transform.state.rotation, dim.x, dim.y);
+    auto obb = OBB(sp, m_transform.state.rotation, dim.x, dim.y);
+
+    _obbs.push_back(obb);
+
+    return range;
 }
 
-void SpriteLabel::pushTransform() {
+void SpriteLabel::pushTransform(ScreenTransform& _transform) {
 
     if (!visibleState()) { return; }
 

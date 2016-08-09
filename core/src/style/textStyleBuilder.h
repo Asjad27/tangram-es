@@ -37,6 +37,8 @@ public:
     // Add label to the mesh using the prepared label data
     void addLabel(const TextStyle::Parameters& _params, Label::Type _type,
                   Label::Transform _transform);
+    void addLabel(const TextStyle::Parameters& _params, Label::Transform _transform,
+                  size_t _anchor, std::vector<glm::vec2> _line);
 
     void addLineTextLabels(const Feature& _feature, const TextStyle::Parameters& _params);
 
