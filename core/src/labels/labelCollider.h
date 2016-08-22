@@ -42,6 +42,7 @@ private:
         float priority;
 
         Range obbs;
+        Range transform;
     };
 
     // Parallel vectors
@@ -54,8 +55,7 @@ private:
 
     float m_tileScale = 1.f;
 
-    Label::ScreenTransform m_screenTransform;
-
+    std::vector<LineSamplerPoint> m_points;
     glm::vec2 m_screenSize;
 };
 

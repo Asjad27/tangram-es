@@ -93,12 +93,14 @@ void LabelCollider::process() {
     mvp[3][1] = 1;
 
     m_obbs.clear();
+    m_points.clear();
 
     for (auto& entry : m_labels) {
         auto* label = entry.label;
-        label->updateScreenTransform(mvp, m_screenSize, false, m_screenTransform);
+        Label::ScreenTransform transform { m_points, entry.transform, true };
+        label->updateScreenTransform(mvp, m_screenSize, false, transform);
 
-        label->obbs(m_screenTransform, m_obbs, entry.obbs);
+        label->obbs(transform, m_obbs, entry.obbs);
 
         auto aabb = m_obbs[entry.obbs.start].getExtent();
         for (int i = entry.obbs.start+1; i < entry.obbs.end(); i++) {

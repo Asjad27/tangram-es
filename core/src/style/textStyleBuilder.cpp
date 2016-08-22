@@ -215,7 +215,7 @@ void TextStyleBuilder::addLineTextLabels(const Feature& _feat, const TextStyle::
 
     // float tolerance = pow(pixelScale * 2, 2);
 
-    LineSampler sampler;
+    LineSampler<std::vector<LineSamplerPoint>> sampler;
 
     auto addSegment = [&](const Line& line, size_t start, size_t end) {
         glm::vec2 center;

@@ -86,7 +86,6 @@ private:
     size_t m_anchorPoint;
     std::vector<glm::vec2> m_line;
 
-    LineSampler m_sampler;
 };
 
 }

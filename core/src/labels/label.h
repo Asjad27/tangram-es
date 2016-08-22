@@ -58,7 +58,29 @@ public:
     };
 
     struct ScreenTransform {
-        LineSampler sampler;
+        ScreenTransform(std::vector<LineSamplerPoint>& _points, Range& _range, bool _initRange = false)
+            : points(_points), range(_range) {
+            if (_initRange) {
+                range.start = _points.size();
+            }
+        }
+
+        auto begin() { return points.begin() + range.start; }
+        auto end() { return points.begin() + range.end(); }
+
+        bool empty() const { return range.length == 0; }
+        size_t size() const { return range.length; }
+
+        auto operator[](size_t _pos) const { return points[range.start + _pos]; }
+
+        void push_back(LineSamplerPoint _p) {
+            points.push_back(_p);
+            range.length += 1;
+        }
+
+    private:
+        std::vector<LineSamplerPoint>& points;
+        Range& range;
     };
 
     struct Transition {

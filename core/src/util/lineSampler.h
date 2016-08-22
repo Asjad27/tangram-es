@@ -4,18 +4,14 @@
 
 namespace Tangram {
 
+struct LineSamplerPoint {
+    LineSamplerPoint(glm::vec2 _coord, float _length) : coord(_coord), length(_length) {}
+    glm::vec2 coord;
+    float length;
+};
+
+template<typename Points>
 struct LineSampler {
-
-    struct Point {
-        Point(glm::vec2 _coord, float _length) : coord(_coord), length(_length) {}
-        glm::vec2 coord;
-        float length;
-    };
-
-    std::vector<Point> m_points;
-
-    size_t m_curPoint = 0;
-    float m_curAdvance = 0.f;
 
     template<typename T>
     void set(std::vector<T> _points) {
@@ -49,7 +45,7 @@ struct LineSampler {
         glm::vec2 p = { _point.x, _point.y };
 
         if (m_points.empty()) {
-            m_points.emplace_back(p, 0.f);
+            m_points.push_back({p, 0.f});
             return;
         }
 
@@ -59,7 +55,6 @@ struct LineSampler {
         float d = glm::distance(prev, p);
 
         m_points.push_back({p, m_points[i].length + d});
-
     }
 
     void clearPoints() {
@@ -92,7 +87,7 @@ struct LineSampler {
         return m_curPoint;
     }
 
-    Point point(size_t _pos) {
+    LineSamplerPoint point(size_t _pos) {
         return m_points[_pos];
     }
 
@@ -186,6 +181,14 @@ struct LineSampler {
 
         return false;
     }
+
+    LineSampler(Points _points) : m_points(_points) { }
+    LineSampler() { }
+private:
+    Points m_points;
+
+    size_t m_curPoint = 0;
+    float m_curAdvance = 0.f;
 
 };
 
