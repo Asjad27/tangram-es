@@ -2,6 +2,7 @@
 
 #include "util/geom.h"
 #include "glm/gtx/rotate_vector.hpp"
+#include "glm/gtx/norm.hpp"
 #include "tangram.h"
 #include "platform.h"
 #include "view/view.h"
@@ -150,6 +151,20 @@ void Label::setParent(Label& _parent, bool _definePriority) {
     }
 
     applyAnchor(m_options.anchors[m_anchorIndex]);
+}
+
+float Label::screenDistance2(glm::vec2 _screenPosition) const {
+    return glm::length2(m_obb.getCentroid() - _screenPosition);
+}
+
+float Label::worldLineLength2() const {
+    float worldLength2 = 0.f;
+
+    if (m_type == Type::line) {
+        worldLength2 = glm::length2(m_worldTransform.positions[0] - m_worldTransform.positions[1]);
+    }
+
+    return worldLength2;
 }
 
 bool Label::offViewport(const glm::vec2& _screenSize) {
