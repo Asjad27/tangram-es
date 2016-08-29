@@ -10,16 +10,19 @@ namespace Tangram {
 const float Label::activation_distance_threshold = 2;
 
 Label::Label(Label::Transform _transform, glm::vec2 _size, Type _type, Options _options)
-    : m_state(State::none),
-      m_type(_type),
+    : m_type(_type),
       m_transform(_transform),
       m_dim(_size),
       m_options(_options) {
 
-    if (!m_options.collide || m_type == Type::debug) {
-        enterState(State::visible, 1.0);
+    if (m_type == Type::debug) {
+        m_options.collide = false;
+    }
+
+    if (m_options.collide) {
+        enterState(State::none, 0.0);
     } else {
-        m_transform.state.alpha = 0.0;
+        enterState(State::visible, 1.0);
     }
 
     m_occludedLastFrame = false;
@@ -56,20 +59,7 @@ bool Label::offViewport(const glm::vec2& _screenSize) {
 }
 
 bool Label::canOcclude() {
-    if (!m_options.collide) {
-        return false;
-    }
-
-    int occludeFlags = (State::visible |
-                        State::none |
-                        State::skip_transition |
-                        State::fading_in |
-                        State::fading_out |
-                        State::sleep |
-                        State::out_of_screen |
-                        State::dead);
-
-    return (occludeFlags & m_state) && !(m_type == Type::debug);
+    return m_options.collide;
 }
 
 bool Label::visibleState() const {
