@@ -284,7 +284,20 @@ void Labels::handleOcclusions(const View& _view, float _dt) {
                 auto& obb = m_obbs[i];
 
                 m_isect2d.intersect(obb.getExtent(), [&](auto& a, auto& b) {
-                        auto other = reinterpret_cast<size_t>(b.m_userData);
+                        size_t other = reinterpret_cast<size_t>(b.m_userData);
+
+                        if (l->parent()) {
+
+                            // TODO: optimize
+                            auto it = std::lower_bound(std::begin(m_labels), std::end(m_labels), int(other),
+                                                       [](auto& p, int other) { return other > p.obbs.start; });
+
+                            if (it != std::end(m_labels)) {
+                                if (l->parent() == it->label) {
+                                    return true;
+                                }
+                            }
+                        }
 
                         if (intersect(obb, m_obbs[other])) {
                             l->occlude();
@@ -314,11 +327,6 @@ void Labels::handleOcclusions(const View& _view, float _dt) {
                 m_repeatGroups[l->options().repeatGroup].push_back(l);
             }
         }
-
-        // Update label meshes
-        m_needUpdate |= l->evalState(_dt);
-        l->pushTransform(transform);
-
     }
 }
 
@@ -361,6 +369,14 @@ void Labels::updateLabelSet(const View& _view, float _dt,
                      {_view.getWidth(), _view.getHeight()});
 
     handleOcclusions(_view, _dt);
+
+    // Update label meshes
+    for (auto& entry : m_labels) {
+        Label::ScreenTransform transform { m_points, entry.transform };
+
+        m_needUpdate |= entry.label->evalState(_dt);
+        entry.label->pushTransform(transform);
+    }
 }
 
 const std::vector<TouchItem>& Labels::getFeaturesAtPoint(const View& _view, float _dt,
