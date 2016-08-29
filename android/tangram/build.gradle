@@ -1,12 +1,12 @@
 buildscript {
   dependencies {
-    classpath 'com.android.tools.build:gradle:2.1.2'
+    classpath 'com.android.tools.build:gradle:2.2.0-beta2'
     classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
   }
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
+// apply plugin: 'com.github.dcendents.android-maven'
 
 group = GROUP
 version = VERSION_NAME
@@ -22,13 +22,31 @@ android {
    *    sudo apt-get install lib32z1
    */
 
-  buildToolsVersion "24.0.0"
+  buildToolsVersion "24.0.2"
 
   defaultConfig {
     minSdkVersion 15
     targetSdkVersion 24
     versionCode buildVersionCode()
     versionName VERSION_NAME
+    externalNativeBuild {
+      cmake {
+        arguments "-DPLATFORM_TARGET=android",
+                  "-DANDROID_TOOLCHAIN=clang",
+                  "-DANDROID_STL=c++_static",
+                  "-DLIBRARY_OUTPUT_PATH_ROOT=../../android/tangram",
+                  "-DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE"
+        cppFlags "-fexceptions",
+                 "-frtti"
+        abiFilters "armeabi-v7a", "armeabi"
+      }
+    }
+  }
+
+  externalNativeBuild {
+    cmake {
+      path "../../CMakeLists.txt"
+    }
   }
 
   sourceSets.main {
@@ -54,4 +72,4 @@ dependencies {
   compile 'com.android.support:support-annotations:24.1.1'
 }
 
-apply from: file('gradle-mvn-push.gradle')
+// apply from: file('gradle-mvn-push.gradle')
