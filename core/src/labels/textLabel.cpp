@@ -267,10 +267,25 @@ void TextLabel::pushTransform(ScreenTransform& _transform) {
             auto quad = *it;
 
             glm::vec2 origin = {(quad.quad[0].pos.x + quad.quad[2].pos.x) * 0.5f, 0 };
-            glm::vec2 point;
+            glm::vec2 point, pa, pb, ra, rb;
+            float px = origin.x / TextVertex::position_scale;
 
-            if (!sampler.sample(center + origin.x / TextVertex::position_scale, point, rotation)) {
+            if (!sampler.sample(center + px, point, rotation)) {
                 // break;
+            }
+            bool ok1 = sampler.sample(center + px - 10, pa, ra);
+            size_t s1 = sampler.curSegment();
+            bool ok2 = sampler.sample(center + px + 10, pb, rb);
+            size_t s2 = sampler.curSegment();
+
+
+            if (s1 != s2 && ok1 && ok2) {
+                auto da = glm::distance(point, pa);
+                auto db = glm::distance(point, pb);
+                float f = da / (da + db);
+                rotation = glm::normalize(ra * f + rb * (1.0f - f));
+
+                point =  (point + pa + pb) * 0.333333f;
             }
 
             point *= TextVertex::position_scale;

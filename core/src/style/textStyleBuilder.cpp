@@ -246,7 +246,10 @@ void TextStyleBuilder::addLineTextLabels(const Feature& _feat, const TextStyle::
 
         if (sampler.sumLength() < minLength) { continue; }
 
+        // Start segment direction
         glm::vec2 dir0 = sampler.segmentDirection(0);
+
+        // current/next segment direction
         glm::vec2 dir1 = sampler.segmentDirection(0);
         glm::vec2 dir2;
 
@@ -257,21 +260,16 @@ void TextStyleBuilder::addLineTextLabels(const Feature& _feat, const TextStyle::
 
             float sqLen = glm::length2(dir1 + dir2);
 
+            // Split line on steep segment angles, or steep overall angle
             if (sqLen < sqDirLimit || glm::length2(dir0 + dir2) < sqDirLimit) {
                 //LOG("split %f,%f / %f,%f", dir1.x, dir1.y, dir2.x, dir2.y);
 
                 if (sampler.point(i).length - sampler.point(startPoint).length > minLength) {
                     addSegment(line, startPoint, i);
                 }
-
                 startPoint = i;
-
                 dir0 = sampler.segmentDirection(i);
-
-            // } else if (sampler.point(i).length - sampler.point(startPoint).length > minLength) {
-            //     addSegment(line, startPoint, i);
             }
-
             dir1 = dir2;
         }
 
