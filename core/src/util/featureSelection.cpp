@@ -37,7 +37,7 @@ void FeatureSelection::endRenderPass(Tangram::RenderState& _rs) {
 
 }
 
-void FeatureSelection::readBufferAt(RenderState& _rs, float _x, float _y, int _vpWidth, int _vpHeight) const {
+GLuint FeatureSelection::readBufferAt(RenderState& _rs, float _x, float _y, int _vpWidth, int _vpHeight) const {
 
     glm::vec2 fbPosition((_x / _vpWidth) * m_framebuffer->getWidth(),
                         (1.f - (_y / _vpHeight)) * m_framebuffer->getHeight());
@@ -49,9 +49,9 @@ void FeatureSelection::readBufferAt(RenderState& _rs, float _x, float _y, int _v
     GLuint pixel;
     GL_CHECK(glReadPixels(fbPosition.x, fbPosition.y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &pixel));
 
-    LOGS("%d", pixel);
-
     _rs.applySavedFramebufferState();
+
+    return pixel;
 }
 
 }

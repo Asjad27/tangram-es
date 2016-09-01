@@ -26,7 +26,7 @@ public:
 
     void endRenderPass(RenderState& _rs);
 
-    void readBufferAt(RenderState& _rs, float _x, float _y, int _vpWidth, int _vpHeight) const;
+    GLuint readBufferAt(RenderState& _rs, float _x, float _y, int _vpWidth, int _vpHeight) const;
 
 private:
 
