@@ -29,6 +29,11 @@ attribute vec3 a_normal;
     varying vec2 v_texcoord;
 #endif
 
+#ifdef TANGRAM_FEATURE_SELECTION
+    attribute vec4 a_selection_color;
+    varying vec4 v_selection_color;
+#endif
+
 varying vec4 v_world_position;
 varying vec4 v_position;
 varying vec4 v_color;
