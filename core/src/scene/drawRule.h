@@ -76,6 +76,8 @@ struct DrawRule {
     int id;
     bool isOutlineOnly = false;
 
+    uint32_t selectionColor = 0;
+
     DrawRule(const DrawRuleData& _ruleData, const SceneLayer& _layer);
 
     void merge(const DrawRuleData& _ruleData, const SceneLayer& _layer);
