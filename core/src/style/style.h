@@ -115,6 +115,8 @@ protected:
     /* <ShaderProgram> used to draw meshes using this style */
     std::unique_ptr<ShaderProgram> m_shaderProgram;
 
+    std::unique_ptr<ShaderProgram> m_selectionProgram;
+
     /* <VertexLayout> shared between meshes using this style */
     std::shared_ptr<VertexLayout> m_vertexLayout;
 
@@ -157,6 +159,8 @@ protected:
 
     RasterType m_rasterType = RasterType::none;
 
+    bool m_selection;
+
 private:
 
     std::vector<StyleUniform> m_styleUniforms;
@@ -181,7 +185,7 @@ private:
 
 public:
 
-    Style(std::string _name, Blending _blendMode, GLenum _drawMode);
+    Style(std::string _name, Blending _blendMode, GLenum _drawMode, bool _selection);
 
     virtual ~Style();
 
