@@ -214,6 +214,15 @@ void DrawRuleMergeSet::apply(const Feature& _feature, const SceneLayer& _layer,
 
         if (valid) {
 
+            bool interactive = false;
+            if (rule.get(StyleParamKey::interactive, interactive) && interactive) {
+                rule.selectionColor = style->createSelectionIdentifier(_feature, _layer);
+                // TODO: use selection color and sent it in the vertex layout
+                // Don't create an identifier for styles that don't need it
+            } else {
+                rule.selectionColor = 0;
+            }
+
             // build outline explicitly with outline style
             const auto& outlineStyleName = rule.findParameter(StyleParamKey::outline_style);
             if (outlineStyleName) {

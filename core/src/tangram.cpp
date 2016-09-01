@@ -17,6 +17,7 @@
 #include "util/inputHandler.h"
 #include "tile/tileCache.h"
 #include "util/fastmap.h"
+#include "util/featureSelection.h"
 #include "view/view.h"
 #include "data/clientGeoJsonSource.h"
 #include "gl.h"
@@ -70,6 +71,8 @@ public:
     std::shared_ptr<Scene> nextScene = nullptr;
 
     bool cacheGlState;
+
+    std::shared_ptr<FeatureSelection> featureSelection;
 
 };
 
@@ -137,6 +140,11 @@ void Map::Impl::setScene(std::shared_ptr<Scene>& _scene) {
 
     inputHandler.setView(view);
     tileManager.setDataSources(_scene->dataSources());
+
+    for (auto& style : scene->styles()) {
+        style->setFeatureSelection(featureSelection);
+    }
+
     tileWorker.setScene(_scene);
     setPixelScale(view.pixelScale());
 
@@ -655,6 +663,8 @@ void Map::setupGL() {
     Hardware::loadCapabilities();
 
     Hardware::printAvailableExtensions();
+
+    impl->featureSelection = std::make_shared<FeatureSelection>();
 }
 
 void Map::useCachedGlState(bool _useCache) {
