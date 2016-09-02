@@ -48,7 +48,6 @@ struct DebugStyleBuilder : public StyleBuilder {
     const DebugStyle& m_style;
 
     void setup(const Tile& _tile) override {}
-    void setup(const Marker& _marker, int zoom) override {}
 
     std::unique_ptr<StyledMesh> build() override {
         if (!Tangram::getDebugFlag(Tangram::DebugFlags::tile_bounds)) {

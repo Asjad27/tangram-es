@@ -22,7 +22,6 @@ struct PointStyleBuilder : public StyleBuilder {
 
 
     void setup(const Tile& _tile) override;
-    void setup(const Marker& _marker, int zoom) override;
 
     bool checkRule(const DrawRule& _rule) const override;
 

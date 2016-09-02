@@ -13,8 +13,6 @@
 #include "gl/shaderProgram.h"
 #include "gl/renderState.h"
 #include "gl/primitives.h"
-#include "marker/marker.h"
-#include "marker/markerManager.h"
 #include "util/asyncWorker.h"
 #include "util/inputHandler.h"
 #include "tile/tileCache.h"
@@ -64,7 +62,6 @@ public:
     InputHandler inputHandler{view};
     TileWorker tileWorker{MAX_WORKERS};
     TileManager tileManager{tileWorker};
-    MarkerManager markerManager;
 
     std::vector<SceneUpdate> sceneUpdates;
     std::array<Ease, 4> eases;
@@ -91,6 +88,9 @@ Map::Map() {
 
     impl.reset(new Impl());
 
+    start = clock();
+    asfand = 0;
+    segments = 1000.0;
 }
 
 Map::~Map() {
@@ -141,7 +141,6 @@ void Map::Impl::setScene(std::shared_ptr<Scene>& _scene) {
     inputHandler.setView(view);
     tileManager.setDataSources(_scene->dataSources());
     tileWorker.setScene(_scene);
-    markerManager.setScene(_scene);
     setPixelScale(view.pixelScale());
 
     bool animated = scene->animated() == Scene::animate::yes;
@@ -273,8 +272,41 @@ bool Map::update(float _dt) {
 
     impl->scene->updateTime(_dt);
 
+    current = clock()-start;
+
+    Style *style1 = impl->scene->findStyle("heightglow");
+
+    if(asfand == 5)
+    {
+        this->lngLatToScreenPosition(-74.007715, 40.702906, &xcoord, &ycoord);
+        }
+    asfand++;
+
+    //glm::vec2 asfand = impl->view.lonLatToScreenPosition(67.049333, 24.875833, val);
+
+    //glm::dvec2 asfand = this->impl->view.getMapProjection().LonLatToMeters({67.007366, 24.817281});
+
+    //glm::dvec2 meters = impl->view.getMapProjection().LonLatToMeters({-122.457851, 37.742266});
+
+    //double lng;
+    //double lat;
+
+    //this->screenPositionToLngLat(xcoord, ycoord, &lng, &lat);
+
+    if(style1 != NULL)
+    {
+        for (unsigned int i = 0; i < style1->m_styleUniforms.size(); i++) {
+            if((style1->m_styleUniforms[i].first.name == "test_x") && (segments != 0.0f))
+            {
+                style1->m_styleUniforms[i].second = (float) (xcoord/segments) * (current/10000);
+                segments--;
+            }
+        }
+    }
+
+
+
     bool viewComplete = true;
-    bool markersNeedUpdate = false;
 
     for (auto& ease : impl->eases) {
         if (!ease.finished()) {
@@ -286,8 +318,6 @@ bool Map::update(float _dt) {
     impl->inputHandler.update(_dt);
 
     impl->view.update();
-
-    impl->markerManager.update(static_cast<int>(impl->view.getZoom()));
 
     for (const auto& style : impl->scene->styles()) {
         style->onBeginUpdate();
@@ -305,12 +335,6 @@ bool Map::update(float _dt) {
         impl->tileManager.updateTileSets(viewState, impl->view.getVisibleTiles());
 
         auto& tiles = impl->tileManager.getVisibleTiles();
-        auto& markers = impl->markerManager.markers();
-
-        for (const auto& marker : markers) {
-            marker->update(_dt, impl->view);
-            markersNeedUpdate |= marker->isEasing();
-        }
 
         if (impl->view.changedOnLastUpdate() ||
             impl->tileManager.hasTileSetChanged()) {
@@ -318,10 +342,11 @@ bool Map::update(float _dt) {
             for (const auto& tile : tiles) {
                 tile->update(_dt, impl->view);
             }
-            impl->labels.updateLabelSet(impl->view, _dt, impl->scene->styles(), tiles, markers,
+
+            impl->labels.updateLabelSet(impl->view, _dt, impl->scene->styles(), tiles,
                                         *impl->tileManager.getTileCache());
         } else {
-            impl->labels.updateLabels(impl->view, _dt, impl->scene->styles(), tiles, markers);
+            impl->labels.updateLabels(impl->view, _dt, impl->scene->styles(), tiles);
         }
     }
 
@@ -338,8 +363,8 @@ bool Map::update(float _dt) {
         viewComplete = false;
     }
 
-    // Request render if labels are in fading states or markers are easing.
-    if (labelsNeedUpdate || markersNeedUpdate) { requestRender(); }
+    // Request for render if labels are in fading in/out states
+    if (labelsNeedUpdate) { requestRender(); }
 
     return viewComplete;
 }
@@ -377,10 +402,6 @@ void Map::render() {
             // Loop over all tiles in m_tileSet
             for (const auto& tile : impl->tileManager.getVisibleTiles()) {
                 style->draw(impl->renderState, *tile);
-            }
-
-            for (const auto& marker : impl->markerManager.markers()) {
-                style->draw(impl->renderState, *marker);
             }
 
             style->onEndDrawFrame();
@@ -606,57 +627,6 @@ void Map::clearDataSource(DataSource& _source, bool _data, bool _tiles) {
     if (_tiles) { impl->tileManager.clearTileSet(_source.id()); }
     if (_data) { _source.clearData(); }
 
-    requestRender();
-}
-
-MarkerID Map::markerAdd() {
-    return impl->markerManager.add();
-}
-
-bool Map::markerRemove(MarkerID _marker) {
-    bool success = impl->markerManager.remove(_marker);
-    requestRender();
-    return success;
-}
-
-bool Map::markerSetPoint(MarkerID _marker, LngLat _lngLat) {
-    bool success = impl->markerManager.setPoint(_marker, _lngLat);
-    requestRender();
-    return success;
-}
-
-bool Map::markerSetPointEased(MarkerID _marker, LngLat _lngLat, float _duration, EaseType ease) {
-    bool success = impl->markerManager.setPointEased(_marker, _lngLat, _duration, ease);
-    requestRender();
-    return success;
-}
-
-bool Map::markerSetPolyline(MarkerID _marker, LngLat* _coordinates, int _count) {
-    bool success = impl->markerManager.setPolyline(_marker, _coordinates, _count);
-    requestRender();
-    return success;
-}
-
-bool Map::markerSetPolygon(MarkerID _marker, LngLat* _coordinates, int* _counts, int _rings) {
-    bool success = impl->markerManager.setPolygon(_marker, _coordinates, _counts, _rings);
-    requestRender();
-    return success;
-}
-
-bool Map::markerSetStyling(MarkerID _marker, const char* _styling) {
-    bool success = impl->markerManager.setStyling(_marker, _styling);
-    requestRender();
-    return success;
-}
-
-bool Map::markerSetVisible(MarkerID _marker, bool _visible) {
-    bool success = impl->markerManager.setVisible(_marker, _visible);
-    requestRender();
-    return success;
-}
-
-void Map::markerRemoveAll() {
-    impl->markerManager.removeAll();
     requestRender();
 }
 

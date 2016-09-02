@@ -35,6 +35,4 @@ struct LngLat {
 
 typedef std::vector<LngLat> Coordinates;
 
-typedef uint32_t MarkerID;
-
 }

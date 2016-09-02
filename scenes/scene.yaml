@@ -64,8 +64,13 @@ styles:
         base: polygons
         lighting: vertex
         shaders:
+            uniforms:
+                test_x: 10.0
             blocks:
                 color: "color.rgb += vec3(worldPosition().z / 800.);"
+                position: |
+                    position.x += test_x;
+
     heightglowline:
         base: lines
         mix: heightglow
@@ -330,7 +335,7 @@ layers:
 
     buildings:
         data: { source: osm }
-        filter: { $zoom: { min: 14 } }
+        filter: function() { return feature.name == "One Battery Park Plaza"; }
         draw:
             polygons:
                 style: heightglow

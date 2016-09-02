@@ -69,7 +69,6 @@ public:
     void clear();
 
     bool setFunctions(const std::vector<std::string>& _functions);
-    bool addFunction(const std::string& _function);
     void setSceneGlobals(const std::unordered_map<std::string, YAML::Node>& sceneGlobals);
 
     void setKeyword(const std::string& _key, Value _value);
@@ -86,8 +85,6 @@ private:
     std::array<Value, 4> m_keywords;
     int m_keywordGeom= -1;
     int m_keywordZoom = -1;
-
-    int m_functionCount = 0;
 
     int32_t m_sceneId = -1;
 
