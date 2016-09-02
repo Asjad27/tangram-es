@@ -41,8 +41,6 @@ public:
 
     int asfand;
 
-    int asjad;
-
     double xcoord;
     double ycoord;
 
