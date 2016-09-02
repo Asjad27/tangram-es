@@ -13,7 +13,7 @@ fonts:
 
 scene:
     animated: true
-    
+
     background:
         color: '#8db7d5'
 cameras:
@@ -68,10 +68,12 @@ styles:
         shaders:
             uniforms:
                 test_x: 10.0
+                test_y: 10.0
             blocks:
                 color: "color.rgb += vec3(worldPosition().z / 800.);"
                 position: |
                     position.x += test_x;
+                    position.y += test_y;
 
     heightglowline:
         base: lines

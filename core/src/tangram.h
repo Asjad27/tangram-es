@@ -43,6 +43,8 @@ public:
 
     float asjad;
 
+    float hasan;
+
     double xcoord;
     double ycoord;
 

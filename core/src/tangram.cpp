@@ -91,9 +91,11 @@ Map::Map() {
     //time(&start);
 
     asfand = 0;
-    segments = 10000.0;
+    segments = 1000.0;
 
     asjad = 0;
+
+    hasan = 0;
 }
 
 Map::~Map() {
@@ -303,12 +305,23 @@ bool Map::update(float _dt) {
         for (unsigned int i = 0; i < style1->m_styleUniforms.size(); i++) {
             if((style1->m_styleUniforms[i].first.name == "test_x"))
             {
-                asjad += (xcoord/segments);
-                if((asjad < xcoord)) {
+                float test = asjad+(xcoord/segments);
+                if(test < xcoord) {
+                    asjad += (xcoord/segments);
                     style1->m_styleUniforms[i].second = asjad;
                 }
-
             }
+            if((style1->m_styleUniforms[i].first.name == "test_y"))
+            {
+                hasan += (ycoord/segments);
+                if((hasan < ycoord)) {
+                    style1->m_styleUniforms[i].second = hasan;
+                }
+            }
+        }
+        if(((asjad <= xcoord+1) && (asjad >= xcoord-1)) && asfand > 6)
+        {
+            this->lngLatToScreenPosition(-73.999368, 40.709973, &xcoord, &ycoord);
         }
     }
 
