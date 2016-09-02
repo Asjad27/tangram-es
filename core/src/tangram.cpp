@@ -88,9 +88,12 @@ Map::Map() {
 
     impl.reset(new Impl());
 
-    start = clock();
+    //time(&start);
+
     asfand = 0;
-    segments = 1000.0;
+    segments = 10000.0;
+
+    asjad = 0;
 }
 
 Map::~Map() {
@@ -272,7 +275,7 @@ bool Map::update(float _dt) {
 
     impl->scene->updateTime(_dt);
 
-    current = clock()-start;
+    //current = clock()-start;
 
     Style *style1 = impl->scene->findStyle("heightglow");
 
@@ -295,11 +298,16 @@ bool Map::update(float _dt) {
 
     if(style1 != NULL)
     {
+        //time(&current);
+        //current -= start;
         for (unsigned int i = 0; i < style1->m_styleUniforms.size(); i++) {
-            if((style1->m_styleUniforms[i].first.name == "test_x") && (segments != 0.0f))
+            if((style1->m_styleUniforms[i].first.name == "test_x"))
             {
-                style1->m_styleUniforms[i].second = (float) (xcoord/segments) * (current/10000);
-                segments--;
+                asjad += (xcoord/segments);
+                if((asjad < xcoord)) {
+                    style1->m_styleUniforms[i].second = asjad;
+                }
+
             }
         }
     }

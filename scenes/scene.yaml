@@ -12,6 +12,8 @@ fonts:
           url: fonts/open sans-300italic.ttf
 
 scene:
+    animated: true
+    
     background:
         color: '#8db7d5'
 cameras:

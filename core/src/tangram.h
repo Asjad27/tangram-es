@@ -41,13 +41,15 @@ public:
 
     int asfand;
 
+    float asjad;
+
     double xcoord;
     double ycoord;
 
     float segments;
 
-    unsigned int start;
-    unsigned int current;
+    //time_t start;
+    //time_t current;
 
     // Load the scene at the given absolute file path asynchronously
     void loadSceneAsync(const char* _scenePath, bool _useScenePosition = false, std::function<void(void)> _platformCallback = {});
