@@ -20,6 +20,7 @@ class Tile;
 class MapProjection;
 class Material;
 struct MaterialUniforms;
+class Marker;
 class VertexLayout;
 class View;
 class Scene;
@@ -35,7 +36,7 @@ enum class LightingType : char {
 };
 
 enum class Blending : int8_t {
-    none = 0,
+    opaque = 0,
     add,
     multiply,
     inlay,
@@ -64,6 +65,8 @@ public:
     virtual ~StyleBuilder() = default;
 
     virtual void setup(const Tile& _tile) = 0;
+
+    virtual void setup(const Marker& _marker, int zoom) = 0;
 
     virtual void addFeature(const Feature& _feat, const DrawRule& _rule);
 
@@ -121,7 +124,7 @@ protected:
     /* <LightingType> to determine how lighting will be calculated for this style */
     LightingType m_lightingType = LightingType::fragment;
 
-    Blending m_blend = Blending::none;
+    Blending m_blend = Blending::opaque;
     int m_blendOrder = -1;
 
     /* Draw mode to pass into <Mesh>es created with this style */
@@ -159,7 +162,7 @@ protected:
 
 private:
 
-
+    std::vector<StyleUniform> m_styleUniforms;
 
     struct LightHandle {
         LightHandle(Light* _light, std::unique_ptr<LightUniforms> _uniforms);
@@ -182,7 +185,7 @@ private:
 public:
 
     Style(std::string _name, Blending _blendMode, GLenum _drawMode);
-    std::vector<StyleUniform> m_styleUniforms;
+
     virtual ~Style();
 
     static bool compare(std::unique_ptr<Style>& a, std::unique_ptr<Style>& b) {
@@ -192,7 +195,7 @@ public:
         const auto& orderA = a->blendOrder();
         const auto& orderB = b->blendOrder();
 
-        if (modeA != Blending::none && modeB != Blending::none) {
+        if (modeA != Blending::opaque && modeB != Blending::opaque) {
             if (orderA != orderB) {
                 return orderA < orderB;
             }
@@ -241,6 +244,8 @@ public:
 
     /* Draws the geometry associated with this <Style> */
     virtual void draw(RenderState& rs, const Tile& _tile);
+
+    virtual void draw(RenderState& rs, const Marker& _marker);
 
     virtual void setLightingType(LightingType _lType);
 

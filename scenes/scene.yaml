@@ -57,34 +57,16 @@ textures:
             info: [0, 1110, 32, 32]
             hotel: [0, 259, 32, 32]
             bookstore: [0, 333, 32, 32]
+    marker:
+        url: img/cross.png
 
 styles:
-    flatcolor:
-        base: polygons
-        lighting: false
-    heightglow:
-        base: polygons
-        lighting: vertex
-        shaders:
-            uniforms:
-                test_x: 10.0
-                test_y: 10.0
-            blocks:
-                color: "color.rgb += vec3(worldPosition().z / 800.);"
-                position: |
-                    position.x += test_x;
-                    position.y += test_y;
-
-    heightglowline:
-        base: lines
-        mix: heightglow
     icons:
         base: points
         texture: pois
-    dashes:
-        base: lines
-        dash: [1, 1]
-        dash_background_color: lightgrey
+    markerS:
+        base: points
+        texture: marker
 
 sources:
     osm:
@@ -275,7 +257,8 @@ layers:
 
     poi_icons:
         data: { source: osm, layer: pois }
-        filter: { name: true, not: { kind: [peak, viewpoint, bicycle_rental, car_sharing] }, $zoom: { min: 15 } }
+        #filter: { name: true, not: { kind: [peak, viewpoint, bicycle_rental, car_sharing] }, $zoom: { min: 15 } }
+        filter: function() { return feature.name == "Open Kitchen"; }
         draw:
             icons:
                 interactive: true
@@ -339,7 +322,7 @@ layers:
 
     buildings:
         data: { source: osm }
-        filter: function() { return feature.name == "One Battery Park Plaza"; }
+        filter: { $zoom: { min: 14 } }
         draw:
             polygons:
                 style: heightglow
@@ -389,7 +372,7 @@ layers:
         draw:
             text:
                 interactive: true
-                visible: true
+                visible: false
                 priority: 2
                 # offset: [0, 8px]
                 transition:
@@ -408,7 +391,7 @@ layers:
                 text:
                     repeat_distance: 200px
                     repeat_group: road_labels
-                    visible: true
+                    visible: false
                     #offset: [0px, 5px]
                     priority: 1
                     transition:
@@ -428,7 +411,7 @@ layers:
                     repeat_distance: 100px
                     repeat_group: roads
                     interactive: true
-                    visible: true
+                    visible: false
                     priority: 3
                     transition:
                         [show, hide]:

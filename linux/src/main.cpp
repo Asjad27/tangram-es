@@ -45,6 +45,7 @@ bool scene_editing_mode = false;
 
 std::shared_ptr<ClientGeoJsonSource> data_source;
 LngLat last_point;
+MarkerID  mid;
 
 template<typename T>
 static constexpr T clamp(T val, T min, T max) {
@@ -229,6 +230,23 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
                 map->queueSceneUpdate("cameras", "{ main_camera: { type: perspective } }");
                 map->applySceneUpdates();
                 break;
+            case GLFW_KEY_M:
+                mid = map->markerAdd();
+                map->markerSetStyling(mid,"markerS");
+                //map->markerSetPoint(mid, LngLat(-74.007126, 40.708852));
+                map->markerSetVisible(mid,true);
+                //map->markerSetPoint(mid, LngLat(-74.007133, 40.709341));
+                map->markerSetPoint(mid, LngLat(-74.010120, 40.703329));
+                //map->markerSetPoint(mid, LngLat(-74.010183, 40.705291));
+                map->setZoom(map->getZoom());
+                break;
+            case GLFW_KEY_K:
+                //map->markerSetPointEased(mid,LngLat(-74.007126, 40.709852),1.0f,EaseType::linear);
+                map->markerSetPointEased(mid,LngLat(-74.006043, 40.706127),5.0f,EaseType::linear);
+                break;
+            case GLFW_KEY_L:
+                map->markerSetPointEased(mid,LngLat(-74.007556, 40.707274),5.0f,EaseType::linear);
+                break;
             case GLFW_KEY_I:
                 map->queueSceneUpdate("cameras", "{ main_camera: { type: isometric } }");
                 map->applySceneUpdates();
@@ -271,7 +289,7 @@ void init_main_window(bool recreate) {
     // Setup tangram
     if (!map) {
         map = new Tangram::Map();
-        map->loadSceneAsync(sceneFile.c_str(), true);
+        map->loadScene(sceneFile.c_str(), true);
     }
 
     if (!recreate) {
@@ -358,6 +376,7 @@ int main(int argc, char* argv[]) {
     glfwSwapInterval(0);
 
     recreate_context = false;
+
 
     // Loop until the user closes the window
     while (keepRunning && !glfwWindowShouldClose(main_window)) {

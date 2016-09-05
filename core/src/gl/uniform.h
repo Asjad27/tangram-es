@@ -33,10 +33,9 @@ class UniformLocation {
 
 public:
     UniformLocation(const std::string& _name) : name(_name) {}
-    const std::string name;
 
 private:
-
+    const std::string name;
 
     mutable int location = -1;
     mutable int generation = -1;
