@@ -246,7 +246,7 @@ void MarkerManager::buildStyling(Marker& marker) {
     }
     m_jsFnIndex = sceneJsFnList.size();
 
-    marker.setDrawRule(std::make_unique<DrawRuleData>(marker.stylingString(), 0, std::move(params)));
+    marker.setDrawRule(std::make_unique<DrawRuleData>("", 0, std::move(params)));
 
 }
 

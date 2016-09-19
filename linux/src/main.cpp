@@ -232,7 +232,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
                 break;
             case GLFW_KEY_M:
                 mid = map->markerAdd();
-                map->markerSetStyling(mid,"markerS");
+                map->markerSetStyling(mid,"{ style: 'points', color: 'purple', width: 10px, order: 100 }");
                 //map->markerSetPoint(mid, LngLat(-74.007126, 40.708852));
                 map->markerSetVisible(mid,true);
                 //map->markerSetPoint(mid, LngLat(-74.007133, 40.709341));
